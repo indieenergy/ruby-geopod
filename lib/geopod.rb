@@ -45,10 +45,24 @@ class Client
         target = URI::Generic.new("http", nil, @host, @port, nil, versioned_url, nil, nil, nil)
         
         if params
-            target.query = params.collect {|k,v| URI.escape(k) + "=" + URI.escape(v) }.join("&")
+            target.query = _urlencode(params)
         end
         
         return target.to_s
+    end
+    
+    def _urlencode(params)
+        query = []
+        params.each_pair do |key, value|
+            if value.class == Array
+                value.each do |v|
+                    query.push(URI.escape(key+"[]") + "=" + URI.escape(v))
+                end
+            else
+                query.push(URI.escape(key) + "=" + URI.escape(value))
+            end
+        end
+        return query.join("&")
     end
   
 end
@@ -73,7 +87,7 @@ class GeopodClient < Client
         target = URI::Generic.new("http", nil, "#{@geopod}.#{@host}", @port, nil, versioned_url, nil, nil, nil)
         
         if params
-            target.query = params.collect {|k,v| URI.escape(k) + "=" + URI.escape(v) }.join("&")
+            target.query = _urlencode(params)
         end
         
         return target.to_s
